@@ -27,3 +27,6 @@ should you need to destroy a cluster for any reason, you can run the following:
 * grab the certificate from the vcenter ui and put on the bastion host. can use wget and put them in /tmp.
   use this wget command: `get https://<vcenter_hostname>/certs/download.zip --no-check-certificate`
   now unzip download.zip and combine the lin certs: `cat certs/lin/*.0 > ca.yaml; cp certs/lin/* /etc/pki/ca-trust/source/anchors; update-ca-trust extract`
+
+
+Once the playbook is run, it will deploy the openshift vms to vcenter, starting with the bootstrap vm followed by the masters, power them up, and then connect to the network.  During this time, the bootstrap has taken control of the API ip adress, and working to pull all necessary images upstream and push down to the masters.  Once this is complete, the boostrap will hand off control of operations to the the masters, including handing off the API, and then after some time, the workers will deploy.  Once the cluster is up, the bootstrap will destroyed.
