@@ -5,3 +5,4 @@ Possibles To Document:
 * flow of cluster deployment
 * ingress and router pods and moving things to infra nodes and service-mesh needing infra nodes; router pod to 3 replicas
 * rbac groups/groupsync setup 
+* cluster url change process
