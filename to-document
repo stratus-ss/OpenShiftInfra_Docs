@@ -1,0 +1,7 @@
+Possibles To Document:
+
+* Storage classes -- having more than one default storage-class causes issues and warning messages on UI
+* labels on clusters and what they do
+* flow of cluster deployment
+* ingress and router pods and moving things to infra nodes and service-mesh needing infra nodes; router pod to 3 replicas
+* rbac groups/groupsync setup 
