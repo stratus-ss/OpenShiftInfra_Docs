@@ -15,7 +15,7 @@ oc create namespace openshift-config
 
 > [!NOTE]
 > Normally you should be using `oc new-project`, however creation of some projects are restricted by the OpenShift API (such as any project starting with `openshift-`).
-> Using `oc create namespace` uses the kubernetes primatives and gets around these restrictions. USE WITH CAUTION!
+> Using `oc create namespace` uses the kubernetes primitives and gets around these restrictions. USE WITH CAUTION!
 
 To create the secret use the following command template:
 
