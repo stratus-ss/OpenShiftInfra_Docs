@@ -35,10 +35,12 @@ openshift-install destroy cluster --dir /opt/OCP/<cluster_name> --log-level erro
 - Generation of SSH key pair for `install-config.yaml`, preferably from a shared user account.
 - Retrieval and configuration of CA certificates from vCenter UI on the bastion host:
 
-```bash wget https://<vcenter_hostname>/certs/download.zip --no-check-certificate unzip download.zip &&
+```
+wget https://<vcenter_hostname>/certs/download.zip --no-check-certificate unzip download.zip &&
 cat certs/lin/.0 > ca.yaml &&
 cp certs/lin/ /etc/pki/ca-trust/source/anchors &&
-update-ca-trust extract```
+update-ca-trust extract
+```
 
 
 ## Deployment Process
