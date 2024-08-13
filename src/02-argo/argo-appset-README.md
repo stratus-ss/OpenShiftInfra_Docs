@@ -1,40 +1,42 @@
-# Argo Appset
+# Use of the Argo Applicationset 
 
-The `day2-appset` file is used to apply to the ACM hub cluster argo instance.  This appset uses the `matrix-generators` option to merge to child generators, the `git` generator and the `clusters` generator to allow the ability to use the go-templating feature to pull the necessary information from both git and clusters variables.
+## Enhancing Operational Efficiency with Argo ApplicationSets
+In our ongoing quest to modernize our IT operations, we've embraced a GitOps methodology, which aligns closely with our goal of achieving seamless, automated deployments. A pivotal component of this approach is Argo CD, a tool that embodies the principles of GitOps for Kubernetes environments. Within our Argo CD setup, we employ an Argo Application Set, specifically named day2-appset, to manage our Day 2 operations with unparalleled efficiency.
 
-The primary purpose of this appset is to deploy the day2 configs from the git repo and apply them to the correct clusters based on a label placed on the cluster.  Particularly, this line in the `spec.source.path` uses the if/else statement to determine which git folder it should deploy from:
-```{{if eq "default" .metadata.labels.cluster }}<folder name>{{ .metadata.labels.env }}/{{index .path.segments 1}}{{else}}{{ .name }}/{{index .path.segments 1}}{{end}}```
+## The Role of day2-appset
+The day2-appset plays a critical role in our Argo CD architecture, serving exclusively the ACM (Advanced Cluster Management) hub cluster instance. Its main objective is to facilitate the deployment of Day 2 configurations—configurations that come into play after the initial setup, such as operator installations and application deployments—from a designated Git repository to the most suitable clusters. This process is guided by a strategic placement strategy and employs advanced templating techniques to tailor deployments to each cluster's unique requirements.
 
-The above is looking for 2 labels of `cluster=default` and `env=<environment>` (this could be dev, test, or prd) on the cluster and will deploy from the `<folder>-<env>` folder.  Should the label `cluster=default` not exist, then the day2 configs will be installed from a folder named after the cluster.  The folders in the git repo would look something like this:
-```day2-dev day2-test day2-prd <custom cluster name>```
+## Strategic Placement and Dynamic Templating
+Central to the day2-appset is a sophisticated placement strategy that precisely targets which clusters receive the Day 2 configurations. This strategy is informed by labels assigned to each cluster, enabling highly targeted deployments. Furthermore, the day2-appset leverages Go templating to dynamically generate application definitions that are perfectly suited to each cluster's specifics. This templating process draws upon information from both the Git repository and the cluster itself, ensuring that the configurations deployed are optimally adapted to the receiving environment.
 
-By using the if/else statment in the appset, it gives a little more flexibility in how the day 2 configs are deployed based on labels on the clusters.
+A particularly noteworthy aspect of this templating is the conditional logic embedded within the `spec.source.path` field. This logic, using the results of an if/else statement, evaluates the presence of specific labels on the cluster, such as `cluster=default` and `env=<environment>`, to decide from which Git folder to deploy the configurations. This flexibility allows us to tailor deployments to different environments (development, testing, production) or accommodate custom configurations for specific clusters.
+Example Usage: ```{{if eq "default" .metadata.labels.cluster }}<folder name>{{ .metadata.labels.env }}/{{index .path.segments 1}}{{else}}{{ .name }}/{{index .path.segments 1}}{{end}}```
 
-> [!NOTE]
-> Since the appset is using an if/else statement, it will either deploy from one of the <env> folders or the custom folder.  Therefore, if you have a custom cluster, you'll need to cp -r everything from an day2-<env> folder and paste it in the custom folder.  This means you will have all the day2 components in this custom folder just as you would the day2-<env> folder.  Then, for custom clusters, you will edit the day2 componenet in its folder as needed. 
+## Dynamic Naming and Namespace Selection
+Building on the adaptability of our deployments, the day2-appset utilizes Go templating within the `.spec.template` section to dynamically name the Day 2 configurations and select the appropriate namespace for deployment. This process ensures that each deployment is uniquely identified and placed within the correct namespace, streamlining management and monitoring efforts.
 
-Argo will utilize the appset's gotemplating to name the day2 config, pick the cluster, and the namespace to deploy the cluster in by using this in the `.spec.template` section of the appset: `'{{index .path.segments 1}}'` and the `{{.name}}`
-This path.segments is looking at the git path and determining which folder the day2 config resides in, and the .name is pulling that cluster name from the `clusters` generator to populate the cluster name in certain fields.  
+## Tailoring Deployments for Custom Clusters
+For clusters requiring custom configurations, the day2-appset accommodates by allowing the replication of Day 2 configurations from environment-specific folders to a custom folder. This approach ensures that all necessary components are available in the custom folder, ready for customization as needed.
 
-The clusters generator pulls this info from the cluster secrets that live in the `openshift-gitops` namespace.
+## Special Handling for Velero and Trident
+Certain Day 2 configurations, notably Velero for backup solutions and Trident for storage provisioning, necessitate additional considerations. The day2-appset addresses these needs by incorporating specific parameter definitions within the Helm chart deployments. These parameters dynamically insert the cluster name and other relevant details into the configuration, ensuring that Velero and Trident are correctly configured for each environment.
+```
+source:
+  helm:
+    parameters:
+    - name: velero.configuration.backupStorageLocation.name # Velero
+      value: '{{.name}}'
+    - name: velero.schedules.cluster-daily.storageLocation # Velero
+      value: '{{.name}}'
+    - name: velero.configuration.backupStorageLocation.bucket # Velero
+      value: '{{.name}}'
+    - name: config.name  # Trident
+      value: '{{.name}}'
+    - name: config.managementLIF # Trident
+      value: '{{ .metadata.labels.netappLIF }}'
+    - name: config.dataLIF # Trident
+      value: '{{ .metadata.labels.netappLIF }}'
+```
 
-> [!NOTE]
-> Two of the day2 configs, Velero and Trident, require that the deployment process utilizes some form of label and/or cluster name to determine the naming strategy of those componenents within the cluster.  This is being done by the appset's parameter definition, located under the `template` block of the appset config.
+The day2-appset exemplifies our commitment to leveraging cutting-edge technology to enhance operational efficiency and consistency. By harnessing the power of Argo CD and GitOps principles, we've streamlined the deployment of Day 2 configurations across our clusters, ensuring that our infrastructure remains aligned with our strategic objectives. This approach not only reduces complexity but also empowers our team to focus on innovation and value creation.
 
-```      source:
-        helm:
-          parameters:
-          - name: velero.configuration.backupStorageLocation.name # Velero
-            value: '{{.name}}'
-          - name: velero.schedules.cluster-daily.storageLocation # Velero
-            value: '{{.name}}'
-          - name: velero.configuration.backupStorageLocation.bucket # Velero
-            value: '{{.name}}'
-          - name: config.name  # Trident
-            value: '{{.name}}'
-          - name: config.managementLIF # Trident
-            value: '{{ .metadata.labels.netappLIF }}'
-          - name: config.dataLIF # Trident
-            value: '{{ .metadata.labels.netappLIF }}'```
-
-The appset looks at the values.yaml file of the day2 components and makes the necessary changes.
