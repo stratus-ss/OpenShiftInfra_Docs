@@ -1,78 +1,35 @@
-# ACM Managed Cluster Generator
-This project is to used to create a the manifests used by hive in [Red Hat Advanced Cluster Management for kubernetes \(RHACM\)](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.9/) generate clusters.
+# Automating Spoke Cluster Deployment with RHACM in VMware
 
-##Example Usage
-1.) Validate all variables are correct
-2.) 'oc login' to Hub cluster cli
-3.) ansible-playbook playbook.yml -i inventory/
+## Introduction
 
+This project focuses on automating the generation of manifests used by Hive in Red Hat Advanced Cluster Management for Kubernetes (RHACM) to orchestrate the creation of clusters. Specifically, it targets the deployment of spoke clusters within a VMware environment, leveraging RHACM's capabilities for multicluster management.
 
-## Role
-```
-roles/
-└── managed-clusters-role
-    ├── defaults
-    │   └── main.yml
-    ├── files
-    ├── handlers
-    │   └── main.yml
-    ├── meta
-    │   └── main.yml
-    ├── README.md
-    ├── tasks
-    │   └── main.yml
-    ├── templates
-    │   ├── cluster-install-config-secret.yaml.j2
-    │   ├── klusterletaddonconfig.yaml.j2
-    │   ├── managedcluster.yaml.j2
-    │   ├── pull-secret.yaml.j2
-    │   ├── ssh-key.yaml.j2
-    │   ├── vs-ca-certs.yaml.j2
-    │   ├── vs-certs.yaml.j2
-    │   ├── vs-clusterdeployment.yaml.j2
-    │   ├── vs-creds.yaml.j2
-    │   ├── vs-infra-machinepool.yaml.j2
-    │   ├── vs-install-config.yaml.j2
-    │   └── vs-worker-machinepool.yaml.j2
-    └── vars
-        └── main
-            ├── main.yml
-            ├── secret.yml
-            ├── vsphere_secret.yml
-            └── vsphere.yml
-```
+## Technical Overview of Spoke Clusters in RHACM
 
-### Important vars files
-N.B. The vars files exist under `roles/managed-cluster-role/defaults/main` directory.
+A spoke cluster, from the perspective of Red Hat Advanced Cluster Management, is a Kubernetes cluster managed and monitored by a central hub cluster via the Multicluster Manager (MCMM). The MCMM serves as the orchestrator, overseeing the lifecycle of these spoke clusters across various environments, including VMware. This architecture enables centralized management, monitoring, and policy enforcement across multiple clusters, thereby enhancing security, compliance, and operational efficiency.
 
-All variable files that have `secret` in their name should be [ansible-vault](https://docs.ansible.com/ansible/latest/cli/ansible-vault.html) encrypted if these are being saved on a publically readable SCM. 
+## Role Structure for Managed Clusters
 
-#### vsphere-vars.yml
-This contains common variables that are applicable to all clusters.
+The project utilizes an Ansible role structure specifically designed for creating and managing clusters within RHACM. This structure includes:
 
-`basedomain` : The domain name for the cluster.
+- **Roles Directory**: Contains the `managed-clusters-role`, encapsulating the logic for deploying and managing clusters.
+- **Templates**: Features Jinja2 templates for generating various Kubernetes manifest files essential for cluster setup, such as `managedcluster.yaml.j2`, `klusterletaddonconfig.yaml.j2`, and others.
+- **Variables Files**: Located under `roles/managed-clusters-role/defaults/main`, these files define critical parameters for cluster deployment, including network configurations, image sets, and authentication details.
 
-`imageset` : The version of OpenShift to start from.  This should match the ImageSet object available to your cluster.
+## Important Variables Files
 
-`clustercidr` : Network cidr to use for the cluster.
+- **vsphere-vars.yml**: Specifies common variables applicable to all clusters, such as the base domain, network CIDRs, and the network type.
+- **vsphere-secret-vars.yml**: Contains sensitive variables not intended for public visibility, including trust bundles, SSH keys, and credentials for VM deployments.
 
-`servicecidr` : Network cidr for the service network of the cluster.
+### Security Note
 
-`ocp_networkType` : Network type to use for the install.  N.B.  OCP 4.12 changes the default to `OVNKubernetes` 
+Variables files that contain secrets, particularly those ending with `_secret`, must be encrypted using Ansible Vault if they are stored in publicly accessible source control management (SCM) systems. This measure ensures the confidentiality of sensitive information.
 
-`infra` : Boolean determining whether to create infractructure machine pools by default.
+## Deployment Steps
 
-`addtionalTags` : A YAML dictionary of additional labels to add to a managed cluster.
+1. **Validation**: Ensure all variables in the configuration files are correctly set.
+2. **Login to Hub Cluster**: Authenticate to the RHACM hub cluster CLI using `oc login`.
+3. **Execute Playbook**: Run the Ansible playbook with the inventory file to initiate the cluster deployment process.
 
-#### vsphere-secret-vars.yml
-This contains common variables that are applicable to all clusters but this info should NOT be publically visible.  See the `N.B.` above.
+This structured approach aligns with the RHACM cluster lifecycle management, facilitating efficient and secure deployment of spoke clusters within VMware environments.
 
-`trustBundle` : The additional CA bundle to use if you have your own private Certificate Authority.
-
-`ssh_public_key` : Public ssh key to be used at install.  This variable doesn't need to be encrypted as it is the PUBLIC key but it is kept in here with the `ssh_private_key` to ease of location.
-
-`ssh_private_key` : Private ssh key to be used at install.
-
-`username` : the username used to deply the vms to vcenter
-
-`password` : associated password for the vm deployment username.
