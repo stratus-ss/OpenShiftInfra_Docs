@@ -1,16 +1,12 @@
-# Node troubleshooting
+# Establishing Secure Shell Access to OpenShift Cluster Nodes for Diagnostic Purposes
+In the phase preceding the deployment of an OpenShift Container Platform (OCP) cluster, a specification of an SSH key within the install-config.yaml file ensures the seamless integration of secure communication channels between the deployment initiator and the cluster's foundational elements. Specifically, during the installation process, an imprint of the public key is stored within the bootstrap node and the subsequent cluster nodes, thereby establishing a cryptographic foundation for secure interactions.
 
-## Connecting to OCP nodes for troubleshooting purposes
+Equipped with the corresponding private key, one gains the capability to initiate secure shell sessions (SSH) towards these instances, facilitating direct interaction and inspection. The invocation of such sessions is exemplified through the following command:
 
-In preparing for an OCP cluster deployment, a `ssh-key` is specified within the `install-config.yaml`.  During the installation, a copy of the public key is stored in the bootstrap node , and the private cluster nodes. Because you have the corresponding private key, you can access these instances by using SSH. 
+`ssh -i <path_to_ssh_key> core@<ip_address_of_node>`
 
-An example: ```ssh -i <path to ssh key> core@<ip address of node>```
+The importance of this method of node access becomes particularly evident during the diagnostic phase of a cluster deployment that may have encountered unforeseen challenges. By leveraging SSH, one can establish a connection to the most recently deployed set of nodes and engage in a detailed examination of system logs, employing the journalctl command as a tool for introspection and analysis.
 
-This method of accessing the nodes is primarily important when troubleshooting a cluster deployment that failed.  One can ssh to the last set of nodes deployed, and troubleshoot by reading logs using the `journalctl` command.  
-
-This ssh method should only be used for troubleshooting purposes.  
-
-Should the ssh keys need to be updated after the cluster has been deployed, you can follow the steps listed here:
-https://access.redhat.com/solutions/3868301
-
-
+It is imperative to underscore that the utilization of SSH access is strictly reserved for diagnostic purposes, serving as a tool for cluster administrators tasked with maintaining the health and integrity of the OCP environment.
+> :information_source: **Info**:
+Should the necessity arise to update the SSH keys post-deployment, a comprehensive guide detailing the necessary steps can be found at the following URL: Red Hat Solution 3868301. 
