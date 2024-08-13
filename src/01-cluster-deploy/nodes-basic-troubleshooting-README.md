@@ -7,6 +7,8 @@ Equipped with the corresponding private key, one gains the capability to initiat
 
 The importance of this method of node access becomes particularly evident during the diagnostic phase of a cluster deployment that may have encountered unforeseen challenges. By leveraging SSH, one can establish a connection to the most recently deployed set of nodes and engage in a detailed examination of system logs, employing the journalctl command as a tool for introspection and analysis.
 
-It is imperative to underscore that the utilization of SSH access is strictly reserved for diagnostic purposes, serving as a tool for cluster administrators tasked with maintaining the health and integrity of the OCP environment.
+
+> **_NOTE:_** The utilization of SSH access is only recommended for disaster recovery scenarios and/or troubleshooting failed cluster deployments.
+
 > :information_source: **Info**:
 Should the necessity arise to update the SSH keys post-deployment, a comprehensive guide detailing the necessary steps can be found at the following URL: [Red Hat Solution 3868301](https://access.redhat.com/solutions/3868301). 
