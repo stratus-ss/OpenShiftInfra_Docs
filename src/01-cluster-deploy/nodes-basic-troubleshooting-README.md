@@ -9,4 +9,4 @@ The importance of this method of node access becomes particularly evident during
 
 It is imperative to underscore that the utilization of SSH access is strictly reserved for diagnostic purposes, serving as a tool for cluster administrators tasked with maintaining the health and integrity of the OCP environment.
 > :information_source: **Info**:
-Should the necessity arise to update the SSH keys post-deployment, a comprehensive guide detailing the necessary steps can be found at the following URL: Red Hat Solution 3868301. 
+Should the necessity arise to update the SSH keys post-deployment, a comprehensive guide detailing the necessary steps can be found at the following URL: [Red Hat Solution 3868301](https://access.redhat.com/solutions/3868301). 
