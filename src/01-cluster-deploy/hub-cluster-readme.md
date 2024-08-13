@@ -11,14 +11,16 @@ This Ansible playbook facilitates the deployment of an OpenShift Hub cluster wit
 3. **Output Directory**: Creates a directory under `/opt/OCP` named according to the target cluster.
 
 ### Usage Examplea
-```ansible-playbook -i inventory/ install-ipi.yaml --extra-vars="@cluster-vars.yaml"
+``` 
+ansible-playbook -i inventory/ install-ipi.yaml --extra-vars="@cluster-vars.yaml"
 
 ```
 
 ### Destroying a Cluster
 
 To remove a cluster, execute:
-```openshift-install destroy cluster --dir /opt/OCP/<cluster_name> --log-level error
+```
+openshift-install destroy cluster --dir /opt/OCP/<cluster_name> --log-level error
 
 ```
 
