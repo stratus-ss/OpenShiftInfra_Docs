@@ -16,6 +16,9 @@ ansible-playbook -i inventory/ install-ipi.yaml --extra-vars="@cluster-vars.yaml
 
 ```
 
+The --extra-vars flag is used to define or override variables at runtime by passing them at the command line. This allows for dynamic input of values during playbook execution, which can be particularly useful for scenarios where certain values may change frequently or need to be customized for different runs of the same playbook.  
+
+
 ### Destroying a Cluster
 
 To remove a cluster, execute:
@@ -48,7 +51,7 @@ update-ca-trust extract
 Upon execution, the playbook initiates the deployment sequence:
 
 1. Deploys the Bootstrap VM to vCenter.
-2. Powers on the Master and Worker VMs.
+2. Deploys the Masters to vCenter, and powers on the Masters.
 3. Connects the VMs to the network.
 4. The Bootstrap VM assumes control of the API IP address, pulls required images, and distributes them to the Masters.
 5. Transfers operational control, including API management, to the Masters.
