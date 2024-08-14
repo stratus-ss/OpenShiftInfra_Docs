@@ -1,20 +1,27 @@
-# Node Machinesets and Machineconfigpools
+# Node Machinesets and MachineConfigPools in OpenShift Clusters
 
 ## Machinesets
-The machinesets within this directory and used per cluster in order to create the necessary nodes for the Openshift clusters.  Each cluster machineset is used to deploy the infra nodes with the needed resources to allow fo the cluster to offload specific workloads off the masters and workers and handover to the infra nodes.  This is important for 2 primary reasons:
-* to prevent incurring billing costs against subscription counts and
-* to separate maintenance and management.  
 
-The workloads generally associated with the infra nodes are:
-* routing
-* monitoring
-* logging
-* registry
+Machinesets are employed within this repository to provision the requisite nodes for individual OpenShift clusters. Each cluster-specific Machineset is instrumental in deploying infrastructure nodes equipped with the necessary resources. This allocation enables the cluster to delegate specific workloads from master and worker nodes to infrastructure nodes, addressing two primary objectives:
 
-Each machineset is specific to the cluster, therefore they are divided up by directories named after the cluster.  The file within the directory is notated with a `<cluster-name>-infra-ms.yaml` nomenclature.  Once a cluster is built, this file can be edited with the proper vcenter information and openshift specific 'infra-id' and can be applied with an `oc apply -f <filename>`.  
+- Mitigating subscription cost implications by optimizing resource utilization.
+- Facilitating segregated maintenance and management protocols.
 
-Once the infra nodes are deployed and online, the router pods can be moved over to them.  This is accomplished with a file in this directory called `ingress-controller.yaml`.  After validating the infra nodes are up, you can `oc apply -f ingresscontroller.yaml` to the cluster.  This will move the router-default pods (in the openshift-ingress namespace) to the infra nodes.  There will be one `router-default` pod per infra node. 
+Infrastructure nodes typically handle the following workload categories:
 
-## Machineconfigpool
+- Routing
+- Monitoring
+- Logging
+- Registry operations
+- Service mesh implementations
 
-There is a file in each directory called `infra-mcp.yaml`.  This is the machineconfigpool resource that will create the `infra` mcp on the cluster.  This can be `oc apply -f` to the cluster.  The purpose of this machineconfigpool is to create a pool for the infra nodes.  This is iportant for operations such as upgrades, where the cluster will need to cordon and drain the nodes after an upgrade for a reboot.  The cluster will see the pool and keep a certain number of nodes up from the pool while it works on a node.  This will allow a more refined upgrade process as it delineates the nodes by pool and make an effort to only pull a percentage of nodes down per pool.  
+Machinesets are organized into directories corresponding to each cluster, with filenames adhering to the `<cluster-name>-infra-ms.yaml` convention. Post-cluster deployment, these files can be customized with relevant vCenter information and the OpenShift-specific 'infra-id'. Application of these configurations is achieved via the command `oc apply -f <filename>`.
+
+Following the deployment and activation of infrastructure nodes, router pods can be migrated to these nodes. This migration is facilitated by the `ingress-controller.yaml` file present in this directory. Upon confirmation of infrastructure node availability, executing `oc apply -f ingresscontroller.yaml` transfers the `router-default` pods (residing in the `openshift-ingress` namespace) to the infrastructure nodes, ensuring a one-to-one correspondence between `router-default` pods and infrastructure nodes.
+
+## MachineConfigPool
+
+Each directory also contains a file named `infra-mcp.yaml`, representing the MachineConfigPool resource. This resource is responsible for establishing the `infra` MachineConfigPool within the cluster, applicable through `oc apply -f <filename>`.
+
+The primary function of this MachineConfigPool is to aggregate infrastructure nodes into a dedicated pool. This configuration is crucial for operations such as cluster upgrades, where nodes necessitate cordoning and draining for reboot post-upgrade. By recognizing the pool, the cluster maintains operational continuity by keeping a predetermined number of nodes active within the pool during upgrade processes. This approach streamlines the upgrade procedure by categorizing nodes into pools, aiming to limit the simultaneous downtime of nodes within a single pool to a manageable percentage.
+
