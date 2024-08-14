@@ -29,10 +29,11 @@ Variables files that contain secrets, particularly those ending with `_secret`, 
 
 1. **Validation**: Ensure all variables in the configuration files are correctly set.
 2. **Login to Hub Cluster**: Authenticate to the RHACM hub cluster CLI using `oc login`.
-3. **Execute Playbook**: Run the Ansible playbook with the inventory file to initiate the creation of the necessary manifests.
+3. **Execute Playbook**: Run the Ansible playbook with the inventory file to initiate the creation of the necessary manifests: 
+  ```ansible-playbook playbook.yml -i inventory/```
 4. **Apply the `full-deploy` manifest**:  The generated `full-deploy.yaml` file from the previous step can now be `oc apply -f` to the ACM cluster or the ansible playbook can have a task that will apply this to the ACM cluster. 
 
-Once the `full-deploy.yaml` is applied, the ACM cluster will being the process of deploying the cluster.  This can be observed in the ACM UI, under the `Infrastructure - Clusters` menu option.  
+Once the `full-deploy.yaml` is applied, the ACM cluster will begin the process of deploying the cluster.  This can be observed in the ACM UI, under the `Infrastructure - Clusters` menu option.  
 
 This structured approach aligns with the RHACM cluster lifecycle management, facilitating efficient and secure deployment of spoke clusters within VMware environments.
 
