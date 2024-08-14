@@ -25,3 +25,5 @@ Each directory also contains a file named `infra-mcp.yaml`, representing the Mac
 
 The primary function of this MachineConfigPool is to aggregate infrastructure nodes into a dedicated pool. This configuration is crucial for operations such as cluster upgrades, where nodes necessitate cordoning and draining for reboot post-upgrade. By recognizing the pool, the cluster maintains operational continuity by keeping a predetermined number of nodes active within the pool during upgrade processes. This approach streamlines the upgrade procedure by categorizing nodes into pools, aiming to limit the simultaneous downtime of nodes within a single pool to a manageable percentage.
 
+
+For more information, the official documentation can be found here: [OCP 4.15 Machinesets](https://docs.openshift.com/container-platform/4.15/machine_management/creating-infrastructure-machinesets.html).
