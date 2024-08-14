@@ -82,5 +82,11 @@ The remediation action specifies the policy's enforcement behavior, distinguishi
 
 The disabled flag provides a mechanism to toggle policy enforcement without necessitating policy deletion, offering administrative convenience and operational flexibility.
 
-ACM policies are indispensable for maintaining governance, security, and compliance across distributed Kubernetes environments managed by ACM. Their structured approach ensures consistent policy application and enforcement, facilitating operational efficiency and adherence to organizational standards.
+## Current policies
 
+As of this writing, the policies in place on the Hub cluster are used to:
+* configure the ldap oauth and rbac components 
+* the groupsync operator installation/groupsync instance creation for admin and appdev teams
+* the external dns operator installation.  
+
+The policies can and will change as the needs of the teams evolve over time.   
