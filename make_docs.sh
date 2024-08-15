@@ -30,4 +30,4 @@ cd ..
 
 stitchmd -C tmp/ -o rendered/OCP_docs.md tmp/summary.md 
 
-#rm -rf tmp
+rm -rf tmp

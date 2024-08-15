@@ -19,9 +19,24 @@
 
 # Introduction
 
+The text in this document attempts to explain the process of managing an OpenShift 4 cluster. The major components used within are:
+
+* Advanced Cluster Management (ACM)
+  * ACM Policies to manage Day 1 concerns
+* ArgoCD (Day 2 deployment/configuration)
+* Helm
+
+The specifics for the Day 1 and Day 2 deployments are found in their respective sections.
+
+In general, a hub cluster (ACM) is deployed and configured. Next, ACM policies are added to ACM and the cluster starts to monitor policy compliance.
+
+After the hub cluster is configured, the automation engine, ArgCD, is deployed and various Argo Appsets are added into the automation framework to update the cluster's configuration including installation of components that are deemed essential for the running of the cluster.
+
 # Centralized Cluster Management
 
 ## ACM Setup
+
+When managing a fleet of clusters at scale, it is essential to have a good management tool on hand. While some may use Ansible, Chef, Puppet or a series of home-grown automations, Red Hat provides [Red Hat Advanced Cluster Management](https://access.redhat.com/products/red-hat-advanced-cluster-management-for-kubernetes) with its OpenShift Platform Plus subscription.
 
 ### Deploying the ACM HUB OpenShift Cluster to VMware Environment
 
@@ -363,9 +378,11 @@ The policies can and will change as the needs of the teams evolve over time.
 
 # Automation
 
+There are a lot of automation tools available to help manage a cluster. This guide, for example, uses a series of Ansible Playbooks to roll out new clusters and coordinate joining to Red Hat ACM. However, there may be very good reasons to use more than one automation tool (cluster standup vs cluster configuration for example). Red Hat provides a supported version of [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) in the form of OpenShift GitOps.
+
 ## OpenShift GitOps Operator Installation (Argocd)
 
-OpenShift GitOps, leveraging Argo CD, introduces a paradigm shift in deploying and managing applications across OpenShift clusters by adhering to GitOps methodologies. This integration enhances the OpenShift ecosystem by providing a unified platform for GitOps workflows, simplifying the automation of Day 2 operations such as application deployment, configuration management, and cluster upgrades.
+OpenShift GitOps introduces a paradigm shift in deploying and managing applications across OpenShift clusters by adhering to GitOps methodologies. This integration enhances the OpenShift ecosystem by providing a unified platform for GitOps workflows, simplifying the automation of Day 2 operations such as application deployment, configuration management, and cluster upgrades.
 
 ### Installation Process
 
@@ -501,6 +518,10 @@ The day2-appset exemplifies our commitment to leveraging cutting-edge technology
 
 # Day 2 Components
 
+Day 2 components, for the purposes of this guide, are defined as any component that is required to be in place before the cluster can handle workload. A Day 1 component by contrast, is any component that directly impacts the base platform (such as SSO, machine sizes, Role Based Authentication and so on).
+
+In this case Day 2 components enable customization of the cluster, allow traffic to flow to applications, providing a variety of storage classes for applications to consume as well as tools to backup workloads and their data.
+
 ## Leveraging cert-manager in OpenShift Clusters via Helm Chart
 
 Cert-manager is an open-source native Kubernetes certificate management controller that automates the management and issuance of TLS certificates from various sources, including Let’s Encrypt, HashiCorp Vault, Venafi, a simple signing key pair, or self-signed. It is particularly crucial in OpenShift clusters, given the dynamic nature of containerized applications that necessitate secure communication channels.
@@ -608,6 +629,121 @@ Upon successful installation of the Trident operator, the next step involves cre
 #### Dynamic Configuration with Cluster Generator
 
 A key feature of this deployment strategy is the use of a cluster generator within the ApplicationSet definition. This generator outputs values that replace placeholders in the Helm chart's `values.yaml` file, enabling dynamic customization of the Trident deployment. For example, it can generate unique identifiers or select specific storage pools based on the cluster's name or location, ensuring that each Trident deployment is optimized for its environment.
+
+For example, the following resources are current implementations of the `TridentBackendConfig` and the `StorageClass`:
+
+##### *TridentBackEndConfig*
+
+```
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: "{{ .Values.config.name }}" 
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: ontap-nas
+  managementLIF: "{{ .Values.config.managementLIF }}"   
+  dataLIF: "{{ .Values.config.dataLIF }}"              
+  backendName: "{{ .Values.config.name }}"
+  storagePrefix: kube
+  nfsMountOptions: nfsvers=4
+  credentials:
+    name: netapp-ontap-secret
+  defaults:
+    spaceReserve: none
+    exportPolicy: myk8scluster
+```
+
+##### *StorageClass*
+
+```
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: "{{ .Values.config.name }}"
+  annotations: 
+    storageclass.kubernetes.io/is-default-class: "true"  
+parameters:
+  backendType: ontap-nas
+  provisioningType: thin
+  storagePools: '"{{ .Values.config.name }}":.*'
+provisioner: csi.trident.netapp.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+```
+
+The above manifests have specific references to their pertinent values.yaml files to pull the needed information into these manifests. However, in addition to this, the Argocd applicationset is evaluating the values.yaml files and making substitutions based on cluster labels and the `cluster generator` within the applicationset.
+For a cluster named `ocp-dev-cluster1`, that has a label of `svm_IP=10.1.1.1`, and the corresponding trident `values.yaml` file has the references of:
+
+```
+config:
+  name: ""
+  dataLIF: ""
+  managementLIF: ""
+```
+
+And the argocd applicationset contains these parameter substitions:
+
+```
+          - name: config.name
+            value: '{{.name}}'
+          - name: config.managementLIF
+            value: '{{ .metadata.labels.netappLIF }}'
+          - name: config.dataLIF
+            value: '{{ .metadata.labels.netappLIF }}'
+```
+
+The resulting manifests, after this processing, is applied to the clusters and will have its necessary values in place:
+
+##### *TridentBackEndConfig*
+
+```
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata: ocp-dev-cluster1
+  name: 
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: ontap-nas
+  managementLIF: 10.1.1.1
+  dataLIF: 10.1.1.1
+  backendName: ocp-dev-cluster1
+  storagePrefix: kube
+  nfsMountOptions: nfsvers=4
+  credentials:
+    name: netapp-ontap-secret
+  defaults:
+    spaceReserve: none   
+    exportPolicy: myk8scluster
+```
+
+##### *StorageClass*
+
+```
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ocp-dev-cluster1
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+parameters:
+  backendType: ontap-nas
+  provisioningType: thin
+  storagePools: ocp-dev-cluster1:.*'
+provisioner: csi.trident.netapp.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+```
 
 ### Benefits of This Approach
 

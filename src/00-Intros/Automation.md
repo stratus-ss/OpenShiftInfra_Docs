@@ -1,0 +1,2 @@
+There are a lot of automation tools available to help manage a cluster. This guide, for example, uses a series of Ansible Playbooks to roll out new clusters and coordinate joining to Red Hat ACM. However, there may be very good reasons to use more than one automation tool (cluster standup vs cluster configuration for example). Red Hat provides a supported version of [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) in the form of OpenShift GitOps.
+

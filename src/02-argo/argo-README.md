@@ -1,6 +1,6 @@
 # OpenShift GitOps Operator Installation (Argocd)
 
-OpenShift GitOps, leveraging Argo CD, introduces a paradigm shift in deploying and managing applications across OpenShift clusters by adhering to GitOps methodologies. This integration enhances the OpenShift ecosystem by providing a unified platform for GitOps workflows, simplifying the automation of Day 2 operations such as application deployment, configuration management, and cluster upgrades.
+OpenShift GitOps introduces a paradigm shift in deploying and managing applications across OpenShift clusters by adhering to GitOps methodologies. This integration enhances the OpenShift ecosystem by providing a unified platform for GitOps workflows, simplifying the automation of Day 2 operations such as application deployment, configuration management, and cluster upgrades.
 
 ## Installation Process
 
