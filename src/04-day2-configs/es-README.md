@@ -26,7 +26,6 @@ When implementing secrets management within an OpenShift cluster, several operat
 
 - **Lifecycle Management**: Establish processes for creating, updating, and deleting secrets as part of the application lifecycle.
 - **Access Controls**: Implement RBAC policies to restrict access to secrets based on the principle of least privilege.
-- **Monitoring and Auditing**: Utilize OpenShift's built-in monitoring and auditing capabilities to track access to secrets and detect unauthorized attempts.
 - **External Integrations**: Evaluate and integrate with external secrets management solutions to leverage advanced features and comply with organizational policies.
 
 ## External Secrets for Day 2 Components
@@ -36,8 +35,38 @@ The management of external secrets for Day 2 components is facilitated through a
 1. **Creation of "azure-secret"**: Initially, a secret named "azure-secret" must be manually created on each cluster within the `external-secrets` namespace. This secret serves as the foundation for accessing external secrets.
 
 2. **Deployment of ClusterSecretStore**: Subsequently, a `ClusterSecretStore` named "azure-shared-store" is established on the cluster via an ACM policy titled `acm-policy-es-secretstore`. This store acts as a bridge between the cluster and the external secrets management system.
+This policy can be seen here:  [ES-Secret-Store-Policy](https://github.wwt.com/k8s-cd/argocd-openshift-day2/blob/24bb127c7e0e72c921f6def21a1d237ed3bf2515/acm-policies/acm-policy-es-secretstore.yaml)
 
 3. **Utilization by Day 2 Components**: Once the `ClusterSecretStore` is validated and operational on the cluster, it becomes available for use by other Day 2 components such as `cert-manager`, `velero`, and `splunk`. These components can securely access the necessary secrets without manual intervention, streamlining operations and enhancing security.
+
+The secrets contained in the other day2 components are created on the clusters as `ExternalSecret` objects which reference the `ClusterSecretStore` as well as reference a key contained in the store.  To provide a deeper look, here is theoretical scenario involving a Velero helm implementation.
+
+Within the `Velero` helm directory, stored in the git repo, a templates folder is found.  Within that 'templates' folder is a manifest called `secrets.yaml`.  This yaml is a `kind: ExternalSecret` which looks like this:
+```
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: velero-credentials
+  namespace: velero
+spec:
+  secretStoreRef:
+    name: azure-shared-store
+    kind: ClusterSecretStore
+  target:
+    name: my-credentials
+    creationPolicy: Owner
+  data:
+  - secretKey: cloud
+    remoteRef:
+      key: my-s3-auth
+```
+The following explains this `ExternalSecret` manifest:
+`target` defines the Kubernetes secret that will be created or updated with the values fetched from the external secret store.
+`name: my-credentials`: The name of the Kubernetes secret that will be created or updated.
+`creationPolicy: Owner`: Specifies the creation policy for the target secret. The Owner policy means that the secret will only be created if the ExternalSecret resource is owned by it, i.e., deleting the ExternalSecret will also delete the secret.
+`secretKey: cloud`: The key in the external secret that corresponds to the data to be synced.
+`key: my-s3`: The key of the data in the external secret store.
 
 This approach to managing external secrets not only automates the provisioning and rotation of secrets but also ensures that sensitive information is handled securely and efficiently across the cluster environment. By leveraging Argo CD for deployment and integrating with ACM policies, organizations can maintain a robust and scalable secrets management strategy that supports the secure operation of Day 2 components within OpenShift clusters.
 
