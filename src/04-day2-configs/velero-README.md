@@ -26,7 +26,7 @@ Upon successful installation of Velero, the next step involves creating the nece
 
 ### Dynamic Configuration with Cluster Generator
 
-A key feature of this deployment strategy is the use of a cluster generator within the ApplicationSet definition. This generator outputs values that replace placeholders in the Helm chart's `values.yaml` file, enabling dynamic customization of the Velero deployment. For example, it can generate unique identifiers or select specific storage locations based on the cluster's name or location, ensuring that each Velero deployment is optimized for its environment.
+A key feature of this deployment strategy is the use of a cluster generator within the ApplicationSet definition. This generator outputs values that replace placeholders in the Helm chart's `values.yaml` file, enabling dynamic customization of the Velero deployment. It can generate unique identifiers or select specific storage locations based on the cluster's name or location, ensuring that each Velero deployment is optimized for its environment.
 
 For example, the following resources are deployed to the cluster based on the these specifications:
 
