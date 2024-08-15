@@ -28,6 +28,49 @@ Upon successful installation of Velero, the next step involves creating the nece
 
 A key feature of this deployment strategy is the use of a cluster generator within the ApplicationSet definition. This generator outputs values that replace placeholders in the Helm chart's `values.yaml` file, enabling dynamic customization of the Velero deployment. For example, it can generate unique identifiers or select specific storage locations based on the cluster's name or location, ensuring that each Velero deployment is optimized for its environment.
 
+For example, the following resources are deployed to the cluster based on the these specifications:
+
+A cluster named "ocp-dev-1" would implement the Velero helm chart using this values.yaml file:
+
+```
+velero:
+  configuration:
+    backupStorageLocation:
+      name: ""
+      bucket: ""
+    schedules:
+      cluster-daily:
+        storageLocation: ""
+
+```
+
+And the Argocd applicationset contains these parameter substitions:
+```
+          parameters:
+          - name: velero.configuration.backupStorageLocation.name
+            value: '{{.name}}'
+          - name: velero.schedules.cluster-daily.storageLocation
+            value: '{{.name}}'
+          - name: velero.configuration.backupStorageLocation.bucket
+            value: '{{.name}}'
+```
+
+The resulting manifests, after this processing, is applied to the clusters and will have its necessary values in place:
+
+#### *BackupStorageLocation*
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: ocp-dev-1
+  namespace: velero
+spec:
+[...]
+  objectStorage:
+    bucket: ocp-dev-1
+  provider: aws
+```
+
+
 ## Benefits of This Approach
 
 Deploying Velero as a Day 2 component in OpenShift clusters using Argo CD and ApplicationSets offers several benefits:
