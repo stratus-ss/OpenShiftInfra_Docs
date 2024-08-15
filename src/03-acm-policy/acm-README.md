@@ -187,13 +187,13 @@ In the above policy, take note of the following:
 By setting an appropriate severity level, organizations can better manage their response to policy violations, focusing resources on addressing the most critical issues first.
 
 * `Placement`: The Placement section determines where and under what conditions a policy should be applied. It consists of several components:
-  * `clusterSets`: 
-       * global: When specified, the policy applies universally across all managed clusters within the scope of RHACM governance. This setting ensures consistent enforcement of critical policies without the need to specify individual clusters or selectors.
+  * `clusterSets`: A clusterset is a structured way to group clusters based on shared characteristics, enabling more effective policy enforcement.  By default, ACM creates a `global` clusterset, containing the Hub cluster and all spoke clusters, as well as a `default` clusterset which is empty but can be used for cluster segregation.  Clustersets can be created to accomodate any number of customer requirements, such as a clusterset based on geographical locations, cluster roles, environment differences, etc.  There is no limit on the number of clustersets an admin can create.  
+       * `global`: When specified, the policy applies universally across all managed clusters within the scope of RHACM governance. This setting ensures consistent enforcement of critical policies without the need to specify individual clusters or selectors.
 
-* matchExpressions:
-  * key: Specifies the label key to match against.
-  * operator: Defines the comparison operation to perform. Common operators include In, NotIn, Exists, and DoesNotExist.
-  * values: Lists the values that the label key must have for the match to succeed.
+* `matchExpressions`:
+  * `key`: Specifies the label key to match against.
+  * `operator`: Defines the comparison operation to perform. Common operators include In, NotIn, Exists, and DoesNotExist.
+  * `values`: Lists the values that the label key must have for the match to succeed.
 
 For example, the policy above targets clusters labeled with `vendor=OpenShift`. This means the policy will only apply to clusters that have been labeled as being OpenShift vendors, allowing for targeted enforcement based on specific cluster characteristics.
 
