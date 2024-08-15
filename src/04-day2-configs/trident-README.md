@@ -147,9 +147,8 @@ Deploying Trident as a Day 2 component in OpenShift clusters using Argo CD and A
 - **Consistency**: Ensures consistent deployment and configuration of Trident across all clusters, simplifying management and troubleshooting.
 - **GitOps Principles**: Aligns with GitOps principles by defining infrastructure as code, enabling version control, audit trails, and easy rollbacks.
 
-:::info
-The trident operator, once installed on the cluster, creates its own storageclass and marks this storageclass as `default`.  This will conflict with the *out-of-the-box* storageclass `thin-csi` as it is also marked as `default`.  The Openshift cluster will choose the `default` storageclass first to handle its storage operations, therefore, the `thin-csi` storageclass needs to have this `default` label marked to *false* like so:
+> **Note**
+> The trident operator, once installed on the cluster, creates its own storageclass and marks this storageclass as `default`.  This will conflict with the *out-of-the-box* storageclass `thin-csi` as it is also marked as `default`.  The Openshift cluster will choose the `default` storageclass first to handle its storage operations, therefore, the `thin-csi` storageclass needs to have this `default` label marked to *false* like so:
 ```
 oc patch storageclass thin-csi -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "false"}}}'
 ```
-:::
