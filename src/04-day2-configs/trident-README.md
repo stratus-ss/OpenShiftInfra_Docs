@@ -29,7 +29,8 @@ A key feature of this deployment strategy is the use of a cluster generator with
 
 For example, the following resources are current implementations of the `TridentBackendConfig` and the `StorageClass`:
 
-*TridentBackEndConfig
+#### *TridentBackEndConfig*
+```
 ---
 apiVersion: trident.netapp.io/v1
 kind: TridentBackendConfig
@@ -49,8 +50,10 @@ spec:
   defaults:
     spaceReserve: none
     exportPolicy: myk8scluster
+```
 
-*StorageClass*
+#### *StorageClass*
+```
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -67,9 +70,11 @@ reclaimPolicy: Delete
 volumeBindingMode: Immediate
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
+```
 
 The above manifests have specific references to their pertinent values.yaml files to pull the needed information into these manifests.  However, in addition to this, the Argocd applicationset is evaluating the values.yaml files and making substitutions based on cluster labels and the `cluster generator` within the applicationset.  
 For a cluster named `ocp-dev-cluster1`, that has a label of `svm_IP=10.1.1.1`, and the corresponding trident `values.yaml` file has the references of: 
+
 ```
 config:
   name: ""
@@ -88,7 +93,9 @@ And the argocd applicationset contains these parameter substitions:
 ```
 
 The resulting manifests, after this processing, is applied to the clusters and will have its necessary values in place:
-### *TridentBackEndConfig*
+
+#### *TridentBackEndConfig*
+
 ```
 ---
 apiVersion: trident.netapp.io/v1
@@ -111,7 +118,7 @@ spec:
     exportPolicy: myk8scluster
 ```
 
-### *StorageClass*
+#### *StorageClass*
 
 ``` 
 ---
