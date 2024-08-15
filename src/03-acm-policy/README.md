@@ -8,7 +8,7 @@ It is imperative to note that the `open-cluster-management-hub` namespace does n
 
 ## Policy Framework
 
-The foundational structure of an ACM policy is meticulously crafted to ensure comprehensive coverage and flexibility in governance. Here is an illustrative example of a policy skeleton:
+The foundational structure of an ACM policy is crafted to ensure comprehensive coverage and flexibility in governance. Here is an illustrative example of a policy skeleton:
 
 
 ```
@@ -64,8 +64,6 @@ subjects:
 ```
 
 
-
-
 This structure encapsulates several critical components:
 
 - **API Version and Kind**: These fields denote the version of the policy API and the type of resource being defined, respectively.
@@ -82,7 +80,125 @@ The remediation action specifies the policy's enforcement behavior, distinguishi
 
 The disabled flag provides a mechanism to toggle policy enforcement without necessitating policy deletion, offering administrative convenience and operational flexibility.
 
-## Current policies
+
+## Functional Policy example
+
+The following policy is an example of a fully working policy used to implement 'etcd-encryption' on all the spoke clusters:
+
+```
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-etcd-encryption
+  namespace: open-cluster-management-hub
+  annotations:
+    policy.open-cluster-management.io/categories: SC System and Communications Protection
+    policy.open-cluster-management.io/controls: SC-28 Protection Of Information At Rest
+    policy.open-cluster-management.io/description: etcd encryption
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: enable-etcd-encryption
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: config.openshift.io/v1
+                kind: APIServer
+                metadata:
+                  name: cluster
+                spec:
+                  encryption:
+                    type: aescbc
+          pruneObjectBehavior: None
+          remediationAction: enforce
+          severity: low
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: enable-etcd-encryption-status-kubeapi
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: operator.openshift.io/v1
+                kind: KubeAPIServer
+                metadata:
+                  name: cluster
+                status:
+                  conditions:
+                    - message: "All resources encrypted: secrets, configmaps"
+                      reason: EncryptionCompleted
+          pruneObjectBehavior: None
+          remediationAction: enforce
+          severity: low
+  remediationAction: enforce
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: policy-etcd-encryption-placement
+  namespace: open-cluster-management-hub
+spec:
+  clusterSets:
+    - global                               
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - key: vendor
+              operator: In
+              values:
+                - OpenShift
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: policy-etcd-encryption-placement
+  namespace: open-cluster-management-hub
+placementRef:
+  name: policy-etcd-encryption-placement
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+subjects:
+  - name: policy-etcd-encryption
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy
+```
+In the above policy, take note of the following:
+
+* `remediationAction:  Enforce` -- The remediationAction field specifies how RHACM should respond when a cluster is found to be non-compliant with a policy. When set to Enforce, RHACM actively attempts to modify the cluster to bring it into compliance with the policy requirements. This action involves applying changes to the cluster configuration to align with the desired state defined by the policy. Essentially, Enforce automates the remediation process, reducing manual intervention required to maintain policy adherence across clusters.  This option can be set to `remediationAction: Inform` if the governance policy should only need RHACM to take note of this event, and instead of automatically correcting the issue, and give the cluster admins control of manually resolving the violation.
+
+* `severity` -- The severity field categorizes the importance or impact level of a policy violation. It helps prioritize issues and guide remediation efforts accordingly. Commonly used values include:
+  * Low: Indicates minor deviations from the policy that may not significantly affect operations but should be addressed.
+  * Medium: Represents moderate deviations that could potentially impact operations or security and warrant prompt attention.
+  * High: Denotes critical violations that pose significant risks to operations, security, or compliance and require immediate remediation.
+By setting an appropriate severity level, organizations can better manage their response to policy violations, focusing resources on addressing the most critical issues first.
+
+* `Placement`: The Placement section determines where and under what conditions a policy should be applied. It consists of several components:
+  * `clusterSets`: 
+       * global: When specified, the policy applies universally across all managed clusters within the scope of RHACM governance. This setting ensures consistent enforcement of critical policies without the need to specify individual clusters or selectors.
+
+* matchExpressions:
+  * key: Specifies the label key to match against.
+  * operator: Defines the comparison operation to perform. Common operators include In, NotIn, Exists, and DoesNotExist.
+  * values: Lists the values that the label key must have for the match to succeed.
+
+For example, the policy above targets clusters labeled with `vendor=OpenShift`. This means the policy will only apply to clusters that have been labeled as being OpenShift vendors, allowing for targeted enforcement based on specific cluster characteristics.
+
+
+## Summary of Current policies
 
 As of this writing, the policies in place on the Hub cluster are used to:
 * configure the ldap oauth and rbac components 
