@@ -58,6 +58,7 @@ And the Argocd applicationset contains these parameter substitions:
 The resulting manifests, after this processing, is applied to the clusters and will have its necessary values in place:
 
 #### *BackupStorageLocation*
+```
 apiVersion: velero.io/v1
 kind: BackupStorageLocation
 metadata:
