@@ -89,5 +89,5 @@ Before starting the upgrade process, ensure you have the following:
 
 
 
-For more detailed guidance on upgrading your cluster, please refer to the [official documentation](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.8/html/manage_cluster/upgrading-your-cluster).
+For more detailed guidance on upgrading your cluster, please refer to the [official documentation](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.9/html/clusters/cluster_mce_overview#upgrading-your-cluster)
 
