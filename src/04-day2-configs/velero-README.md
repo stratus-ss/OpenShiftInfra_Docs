@@ -30,7 +30,7 @@ A key feature of this deployment strategy is the use of a cluster generator with
 
 For example, the following resources are deployed to the cluster based on the these specifications:
 
-A cluster named "ocp-dev-1" would implement the Velero helm chart using this values.yaml file:
+A cluster named "ocp-dev-1" is managed by the ACM hub cluster.  The velero day2 component uses this as its `values.yaml` file:
 
 ```
 velero:
@@ -44,7 +44,7 @@ velero:
 
 ```
 
-And the Argocd applicationset contains these parameter substitions:
+And the Argocd applicationset on the ACM hub cluster contains these parameter substitions:
 ```
           parameters:
           - name: velero.configuration.backupStorageLocation.name
