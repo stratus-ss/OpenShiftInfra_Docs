@@ -3,6 +3,52 @@
 ## Enhancing Operational Efficiency with Argo ApplicationSets
 In our ongoing quest to modernize our IT operations, we've embraced a GitOps methodology, which aligns closely with our goal of achieving seamless, automated deployments. A pivotal component of this approach is Argo CD, a tool that embodies the principles of GitOps for Kubernetes environments. Within our Argo CD setup, we employ an Argo Application Set, specifically named day2-appset, to manage our Day 2 operations with unparalleled efficiency.
 
+
+## Applicationset Overview
+Argo ApplicationSets are a powerful feature within Argo CD designed to automate and enhance the management of multiple Argo CD Applications across numerous clusters. It introduces a scalable and efficient method for defining and orchestrating deployments, especially beneficial in complex environments involving many clusters or large monorepos.
+
+### Key Features and Benefits
+* Multi-Cluster Support: ApplicationSet automates the creation and management of Argo CD Applications for each targeted cluster, significantly reducing manual efforts and potential errors.
+* Monorepo Deployments: Simplifies the deployment of multiple applications contained within a single repository by leveraging templating to dynamically generate Argo CD Applications based on predefined patterns or criteria.
+* Self-Service for Unprivileged Users: Facilitates a secure self-service model, allowing developers without direct access to the Argo CD namespace to deploy applications, streamlining operations and enhancing security.
+* Templated Automation: Enables automated generation of Argo CD Applications based on templates defined within an ApplicationSet resource, supporting dynamic deployments tailored to various environments or configurations.
+### How ApplicationSet Works
+The ApplicationSet controller operates alongside Argo CD, typically within the same namespace. It monitors for newly created or updated ApplicationSet Custom Resources (CRs) and automatically constructs corresponding Argo CD Applications according to the specifications defined in these CRs.
+
+### Example ApplicationSet Resource
+Below is an example of an ApplicationSet resource targeting multiple clusters:
+```
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: guestbook
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+      - cluster: engineering-dev
+        url: https://1.2.3.4
+      - cluster: engineering-prod
+        url: https://2.4.6.8
+      - cluster: finance-preprod
+        url: https://9.8.7.6
+  template:
+    metadata:
+      name: '{{.cluster}}-guestbook'
+    spec:
+      project: my-project
+      source:
+        repoURL: https://github.com/infra-team/cluster-deployments.git
+        targetRevision: HEAD
+        path: guestbook/{{.cluster}}
+      destination:
+        server: '{{.url}}'
+        namespace: guestbook
+```
+This resource defines a set of clusters (engineering-dev, engineering-prod, finance-preprod) and specifies the deployment details for a guestbook application across these clusters.
+
 ## The Role of day2-appset
 The day2-appset plays a critical role in our Argo CD architecture, serving exclusively the ACM (Advanced Cluster Management) hub cluster instance. Its main objective is to facilitate the deployment of Day 2 configurations—configurations that come into play after the initial setup, such as operator installations and application deployments—from a designated Git repository to the most suitable clusters. This process is guided by a strategic placement strategy and employs advanced templating techniques to tailor deployments to each cluster's unique requirements.
 
@@ -39,4 +85,8 @@ source:
 ```
 
 The day2-appset exemplifies our commitment to leveraging cutting-edge technology to enhance operational efficiency and consistency. By harnessing the power of Argo CD and GitOps principles, we've streamlined the deployment of Day 2 configurations across our clusters, ensuring that our infrastructure remains aligned with our strategic objectives. This approach not only reduces complexity but also empowers our team to focus on innovation and value creation.
+
+
+*For more information on Argo ApplicationSets, see the [official documentation](https://argo-cd.readthedocs.io/en/stable/user-guide/application-set/).*
+
 
