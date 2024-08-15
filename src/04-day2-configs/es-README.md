@@ -61,12 +61,13 @@ spec:
     remoteRef:
       key: my-s3-auth
 ```
-The following explains this `ExternalSecret` manifest:
-`target` defines the Kubernetes secret that will be created or updated with the values fetched from the external secret store.
-`name: my-credentials`: The name of the Kubernetes secret that will be created or updated.
-`creationPolicy: Owner`: Specifies the creation policy for the target secret. The Owner policy means that the secret will only be created if the ExternalSecret resource is owned by it, i.e., deleting the ExternalSecret will also delete the secret.
-`secretKey: cloud`: The key in the external secret that corresponds to the data to be synced.
-`key: my-s3`: The key of the data in the external secret store.
+
+The following is a breakdown of each component of that `ExternalSecret` manifest:
+* `target` defines the Kubernetes secret that will be created or updated with the values fetched from the external secret store.
+* `name: my-credentials`: The name of the Kubernetes secret that will be created or updated.
+* `creationPolicy: Owner`: Specifies the creation policy for the target secret. The Owner policy means that the secret will only be created if the ExternalSecret resource is owned by it, i.e., deleting the ExternalSecret will also delete the secret.
+* `secretKey: cloud`: The key in the external secret that corresponds to the data to be synced.
+* `key: my-s3`: The key of the data in the external secret store.
 
 This approach to managing external secrets not only automates the provisioning and rotation of secrets but also ensures that sensitive information is handled securely and efficiently across the cluster environment. By leveraging Argo CD for deployment and integrating with ACM policies, organizations can maintain a robust and scalable secrets management strategy that supports the secure operation of Day 2 components within OpenShift clusters.
 
