@@ -88,7 +88,8 @@ And the argocd applicationset contains these parameter substitions:
 ```
 
 The resulting manifests, after this processing, is applied to the clusters and will have its necessary values in place:
-*TridentBackEndConfig
+### *TridentBackEndConfig*
+```
 ---
 apiVersion: trident.netapp.io/v1
 kind: TridentBackendConfig
@@ -108,8 +109,11 @@ spec:
   defaults:
     spaceReserve: none   
     exportPolicy: myk8scluster
+```
 
-*StorageClass*
+### *StorageClass*
+
+``` 
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -126,7 +130,7 @@ reclaimPolicy: Delete
 volumeBindingMode: Immediate
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
-
+```
 ## Benefits of This Approach
 
 Deploying Trident as a Day 2 component in OpenShift clusters using Argo CD and ApplicationSets offers several benefits:
