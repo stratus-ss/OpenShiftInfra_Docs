@@ -62,10 +62,16 @@ Example Usage: ```{{if eq "default" .metadata.labels.cluster }}<folder name>{{ .
 Building on the adaptability of our deployments, the day2-appset utilizes Go templating within the `.spec.template` section to dynamically name the Day 2 configurations and select the appropriate namespace for deployment. This process ensures that each deployment is uniquely identified and placed within the correct namespace, streamlining management and monitoring efforts.
 
 ## Tailoring Deployments for Custom Clusters
-For clusters requiring custom configurations, the day2-appset accommodates by allowing the replication of Day 2 configurations from environment-specific folders to a custom folder. This approach ensures that all necessary components are available in the custom folder, ready for customization as needed.
+For clusters requiring custom configurations, the day2-appset accommodates by allowing the replication of Day 2 configurations from environment-specific folders to a custom folder. This approach ensures that all necessary components are available in the custom folder, ready for customization as needed.  
+
+In this specific environment, the Argo ApplicationSet utilizes distinct cluster labels present on the spoke clusters, specifically `cluster=default` and `cluster=custom`, to ascertain the directory from which Argo CD should initiate the deployment of its Day 2 components. When a cluster is designated with the label `cluster=custom`, Argo CD proceeds to deploy its Day 2 components from a directory within the Git repository that corresponds to the name of the cluster itself. For instance, if a cluster is identified as "ocp-test-cluster" and tagged with the `cluster=custom` label, Argo CD will seek out a directory labeled "ocp-test-cluster" within the Git repository to source its Day 2 components for deployment.
+
 
 ## Special Handling for Velero and Trident
 Certain Day 2 configurations, notably Velero for backup solutions and Trident for storage provisioning, necessitate additional considerations. The day2-appset addresses these needs by incorporating specific parameter definitions within the Helm chart deployments. These parameters dynamically insert the cluster name and other relevant details into the configuration, ensuring that Velero and Trident are correctly configured for each environment.
+
+*Excerpt from the day2-appset within the `openshift-gitops` namespace:*
+
 ```
 source:
   helm:
