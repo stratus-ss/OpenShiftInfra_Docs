@@ -1,0 +1,1 @@
+When managing a fleet of clusters at scale, it is essential to have a good management tool on hand. While some may use Ansible, Chef, Puppet or a series of home-grown automations, Red Hat provides [Red Hat Advanced Cluster Management](https://access.redhat.com/products/red-hat-advanced-cluster-management-for-kubernetes) with its OpenShift Platform Plus subscription. 
