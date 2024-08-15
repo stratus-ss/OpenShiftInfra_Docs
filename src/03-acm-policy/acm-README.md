@@ -83,7 +83,7 @@ The disabled flag provides a mechanism to toggle policy enforcement without nece
 
 ## Functional Policy example
 
-The following policy is an example of a fully working policy used to implement 'etcd-encryption' on all the spoke clusters:
+The following policy is an example of a fully working policy used to implement 'etcd-encryption' on all clusters:
 
 ```
 apiVersion: policy.open-cluster-management.io/v1
