@@ -3,7 +3,6 @@
 ## Enhancing Operational Efficiency with Argo ApplicationSets
 In our ongoing quest to modernize our IT operations, we've embraced a GitOps methodology, which aligns closely with our goal of achieving seamless, automated deployments. A pivotal component of this approach is Argo CD, a tool that embodies the principles of GitOps for Kubernetes environments. Within our Argo CD setup, we employ an Argo Application Set, specifically named day2-appset, to manage our Day 2 operations with unparalleled efficiency.
 
-
 ## Applicationset Overview
 Argo ApplicationSets are a powerful feature within Argo CD designed to automate and enhance the management of multiple Argo CD Applications across numerous clusters. It introduces a scalable and efficient method for defining and orchestrating deployments, especially beneficial in complex environments involving many clusters or large monorepos.
 
@@ -13,7 +12,7 @@ Argo ApplicationSets are a powerful feature within Argo CD designed to automate 
 * Self-Service for Unprivileged Users: Facilitates a secure self-service model, allowing developers without direct access to the Argo CD namespace to deploy applications, streamlining operations and enhancing security.
 * Templated Automation: Enables automated generation of Argo CD Applications based on templates defined within an ApplicationSet resource, supporting dynamic deployments tailored to various environments or configurations.
 ### How ApplicationSet Works
-The ApplicationSet controller operates alongside Argo CD, typically within the same namespace. It monitors for newly created or updated ApplicationSet Custom Resources (CRs) and automatically constructs corresponding Argo CD Applications according to the specifications defined in these CRs.
+The ApplicationSet controller operates alongside Argo CD, typically within the same namespace. It monitors for newly created or updated ApplicationSet Custom Resources (CRs) and automatically constructs corresponding Argo CD Applications according to the specifications defined in these CRs. It is a template used to generate individual Argo Applications. In this case the ApplicationSet is used to template the create of an Argo Application that will be constructed with cluster specific information (such as URLs, Git folders etc). In this way, no matter how many clusters you have, you can be sure that the Application to deploy a day 2 component, will remain programatically consistent without human intervention. 
 
 ### Example ApplicationSet Resource
 Below is an example of an ApplicationSet resource targeting multiple clusters:

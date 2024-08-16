@@ -479,7 +479,7 @@ Argo ApplicationSets are a powerful feature within Argo CD designed to automate 
 
 #### How ApplicationSet Works
 
-The ApplicationSet controller operates alongside Argo CD, typically within the same namespace. It monitors for newly created or updated ApplicationSet Custom Resources (CRs) and automatically constructs corresponding Argo CD Applications according to the specifications defined in these CRs.
+The ApplicationSet controller operates alongside Argo CD, typically within the same namespace. It monitors for newly created or updated ApplicationSet Custom Resources (CRs) and automatically constructs corresponding Argo CD Applications according to the specifications defined in these CRs. It is a template used to generate individual Argo Applications. In this case the ApplicationSet is used to template the create of an Argo Application that will be constructed with cluster specific information (such as URLs, Git folders etc). In this way, no matter how many clusters you have, you can be sure that the Application to deploy a day 2 component, will remain programatically consistent without human intervention.
 
 #### Example ApplicationSet Resource
 
