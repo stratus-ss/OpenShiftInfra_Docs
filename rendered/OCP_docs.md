@@ -433,7 +433,7 @@ OpenShift GitOps introduces a paradigm shift in deploying and managing applicati
 
 The OpenShift GitOps Operator works by polling the specified Git repo (and optionally branch) for changes. When a change is detected, the new configuration is pushed down to clusters that match whatever ruleset has been defined in ArgoCD.
 
-![](../src/ArgoCD_Process.png)
+![](../src/images/ArgoCD_Process.png)
 
 ### Installation Process
 
