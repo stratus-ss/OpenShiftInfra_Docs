@@ -532,6 +532,8 @@ Day 2 components, for the purposes of this guide, are defined as any component t
 
 In this case Day 2 components enable customization of the cluster, allow traffic to flow to applications, providing a variety of storage classes for applications to consume as well as tools to backup workloads and their data.
 
+composable
+
 ## Leveraging cert-manager in OpenShift Clusters via Helm Chart
 
 Cert-manager is an open-source native Kubernetes certificate management controller that automates the management and issuance of TLS certificates from various sources, including Let’s Encrypt, HashiCorp Vault, Venafi, a simple signing key pair, or self-signed. It is particularly crucial in OpenShift clusters, given the dynamic nature of containerized applications that necessitate secure communication channels.
@@ -597,7 +599,6 @@ When implementing secrets management within an OpenShift cluster, several operat
 
 - **Lifecycle Management**: Establish processes for creating, updating, and deleting secrets as part of the application lifecycle.
 - **Access Controls**: Implement RBAC policies to restrict access to secrets based on the principle of least privilege.
-- **Monitoring and Auditing**: Utilize OpenShift's built-in monitoring and auditing capabilities to track access to secrets and detect unauthorized attempts.
 - **External Integrations**: Evaluate and integrate with external secrets management solutions to leverage advanced features and comply with organizational policies.
 
 ### External Secrets for Day 2 Components
@@ -607,8 +608,40 @@ The management of external secrets for Day 2 components is facilitated through a
 1. **Creation of "azure-secret"**: Initially, a secret named "azure-secret" must be manually created on each cluster within the `external-secrets` namespace. This secret serves as the foundation for accessing external secrets.
 
 2. **Deployment of ClusterSecretStore**: Subsequently, a `ClusterSecretStore` named "azure-shared-store" is established on the cluster via an ACM policy titled `acm-policy-es-secretstore`. This store acts as a bridge between the cluster and the external secrets management system.
+   This policy can be seen here: [ES-Secret-Store-Policy](https://github.wwt.com/k8s-cd/argocd-openshift-day2/blob/24bb127c7e0e72c921f6def21a1d237ed3bf2515/acm-policies/acm-policy-es-secretstore.yaml)
 
 3. **Utilization by Day 2 Components**: Once the `ClusterSecretStore` is validated and operational on the cluster, it becomes available for use by other Day 2 components such as `cert-manager`, `velero`, and `splunk`. These components can securely access the necessary secrets without manual intervention, streamlining operations and enhancing security.
+
+The secrets contained in the other day2 components are created on the clusters as `ExternalSecret` objects which reference the `ClusterSecretStore` as well as reference a key contained in the store. To provide a deeper look, here is theoretical scenario involving a Velero helm implementation.
+
+Within the `Velero` helm directory, stored in the git repo, a templates folder is found. Within that 'templates' folder is a manifest called `secrets.yaml`. This yaml is a `kind: ExternalSecret` which looks like this:
+
+```
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: velero-credentials
+  namespace: velero
+spec:
+  secretStoreRef:
+    name: azure-shared-store
+    kind: ClusterSecretStore
+  target:
+    name: my-credentials
+    creationPolicy: Owner
+  data:
+  - secretKey: cloud
+    remoteRef:
+      key: my-s3-auth
+```
+
+The following is a breakdown of each component of that `ExternalSecret` manifest:
+* `target` defines the Kubernetes secret that will be created or updated with the values fetched from the external secret store.
+* `name: my-credentials`: The name of the Kubernetes secret that will be created or updated.
+* `creationPolicy: Owner`: Specifies the creation policy for the target secret. The Owner policy means that the secret will only be created if the ExternalSecret resource is owned by it, i.e., deleting the ExternalSecret will also delete the secret.
+* `secretKey: cloud`: The key in the external secret that corresponds to the data to be synced.
+* `key: my-s3`: The key of the data in the external secret store.
 
 This approach to managing external secrets not only automates the provisioning and rotation of secrets but also ensures that sensitive information is handled securely and efficiently across the cluster environment. By leveraging Argo CD for deployment and integrating with ACM policies, organizations can maintain a robust and scalable secrets management strategy that supports the secure operation of Day 2 components within OpenShift clusters.
 
@@ -799,7 +832,52 @@ Upon successful installation of Velero, the next step involves creating the nece
 
 #### Dynamic Configuration with Cluster Generator
 
-A key feature of this deployment strategy is the use of a cluster generator within the ApplicationSet definition. This generator outputs values that replace placeholders in the Helm chart's `values.yaml` file, enabling dynamic customization of the Velero deployment. For example, it can generate unique identifiers or select specific storage locations based on the cluster's name or location, ensuring that each Velero deployment is optimized for its environment.
+A key feature of this deployment strategy is the use of a cluster generator within the ApplicationSet definition. This generator outputs values that replace placeholders in the Helm chart's `values.yaml` file, enabling dynamic customization of the Velero deployment. It can generate unique identifiers or select specific storage locations based on the cluster's name or location, ensuring that each Velero deployment is optimized for its environment.
+
+For example, the following resources are deployed to the cluster based on the these specifications:
+
+A cluster named "ocp-dev-1" is managed by the ACM hub cluster. The velero day2 component uses this as its `values.yaml` file:
+
+```
+velero:
+  configuration:
+    backupStorageLocation:
+      name: ""
+      bucket: ""
+    schedules:
+      cluster-daily:
+        storageLocation: ""
+
+```
+
+And the Argocd applicationset on the ACM hub cluster contains these parameter substitions:
+
+```
+          parameters:
+          - name: velero.configuration.backupStorageLocation.name
+            value: '{{.name}}'
+          - name: velero.schedules.cluster-daily.storageLocation
+            value: '{{.name}}'
+          - name: velero.configuration.backupStorageLocation.bucket
+            value: '{{.name}}'
+```
+
+The resulting manifests, after this processing, is applied to the clusters and will have its necessary values in place:
+
+##### *BackupStorageLocation*
+
+```
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: ocp-dev-1
+  namespace: velero
+spec:
+[...]
+  objectStorage:
+    bucket: ocp-dev-1
+  provider: aws
+```
 
 ### Benefits of This Approach
 
