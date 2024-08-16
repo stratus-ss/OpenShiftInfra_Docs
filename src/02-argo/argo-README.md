@@ -2,6 +2,10 @@
 
 OpenShift GitOps introduces a paradigm shift in deploying and managing applications across OpenShift clusters by adhering to GitOps methodologies. This integration enhances the OpenShift ecosystem by providing a unified platform for GitOps workflows, simplifying the automation of Day 2 operations such as application deployment, configuration management, and cluster upgrades.
 
+The OpenShift GitOps Operator works by polling the specified Git repo (and optionally branch) for changes. When a change is detected, the new configuration is pushed down to clusters that match whatever ruleset has been defined in ArgoCD.
+
+![](../src/ArgoCD_Process.png)
+
 ## Installation Process
 
 The OpenShift GitOps Operator is seamlessly integrated into the OpenShift ecosystem via the OperatorHub available in the OpenShift Web Console's Administrator perspective. By navigating to Operators → OperatorHub, searching for "OpenShift GitOps," and proceeding with the installation prompts, the operator is deployed across all namespaces within the cluster. This straightforward installation process ensures that OpenShift GitOps is readily available for managing cluster-wide operations.
