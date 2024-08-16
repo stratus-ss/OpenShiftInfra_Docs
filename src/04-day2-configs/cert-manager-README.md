@@ -19,7 +19,99 @@ Cert-manager operates by watching events from the Kubernetes API server and resp
 - **Webhook Solver**: Handles ACME (Automatic Certificate Management Environment) challenges for domain validation.
 - **CA Injector**: Injects CA certificates into Kubernetes Secrets for use by other components.
 
-The workflow typically involves creating a `Certificate` resource that specifies the desired state, such as the domains to cover, the issuer to use, and the location to store the issued certificate. Cert-manager then coordinates with the specified issuer to obtain a certificate meeting the criteria defined in the `Certificate` resource.
+
+The workflow typically involves creating a `Certificate` and an `Issuer` resource. In the context of certificate issuance, there is something called the DNS-01 challenge which is used by Automatic Certificate Management Environments to prove domain authorities. The challenge works like this:
+
+
+* Challenge Initiation: When requesting a certificate, Cert Manager communicates with the CA to initiate a DNS-01 challenge for the domain(s) in question.
+* Token Generation: The CA provides a unique token for the challenge.
+* TXT Record Creation: The ACME client then creates a DNS TXT record for the domain, embedding the token in a specific format. This record is typically placed under a subdomain like _acme-challenge.YOURDOMAIN.COM.
+* Verification: The CA queries the DNS system for the TXT record. If the record exists and contains the expected token, the CA verifies domain ownership and proceeds with the issuance of the certificate.
+
+
+In the example below, the Issuer is contacting Let's Encrypt:
+
+```
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: example-rfc2136-issuer
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: your-email@example.com
+    privateKeySecretRef:
+      name: example-rfc2136-account-key
+    solvers:
+    - dns01:
+        rfc2136:
+          nameserver: YOUR_DNS_SERVER_IP:53
+          tsigKeyName: YOUR_TSIG_KEY_NAME
+          tsigAlgorithm: HMACSHA512
+          tsigSecretSecretRef:
+            name: YOUR_K8S_SECRET_HOLDING_TSIG_KEY
+            key: YOUR_KEY_INSIDE_THE_SECRET
+```
+
+In the above configuration here is an explanation of the options under `rfc2136`
+
+**nameserver**: The IP address and port of your DNS server that supports RFC2136. This is where cert-manager will send DNS updates.
+
+**tsigKeyName**: The name of the TSIG key used for authentication with the DNS server. This key is generated separately and must match the key name used in your DNS server configuration.
+
+**tsigAlgorithm**: The algorithm used for the TSIG key. This must match the algorithm chosen when generating the TSIG key. Common algorithms include HMACSHA256, HMACSHA384, and HMACSHA512.
+
+**tsigSecretSecretRef**: A reference to an OpenShift Secret that holds the TSIG key. This secret should contain the TSIG key in plain text. The name is the name of the secret, and the key is the key inside the secret that contains the TSIG key value.
+
+
+After specifying the `Issuer` you can then create a `Certificate` resource in order to generate a valid TLS certificate. An example of a certificate definition might look like:
+
+```
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-application-certificate
+  namespace: default
+spec:
+  secretName: my-application-tls
+  dnsNames:
+  - myapp.example.com
+  - www.myapp.example.com
+  issuerRef:
+    name: example-rfc2136-issuer
+    kind: Issuer
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days before expiration
+```
+
+The final step is to link your deployment to the `Certificate` created above:
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-application-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: my-application-container
+        image: my-application-image
+        ports:
+        - containerPort: 443
+        volumeMounts:
+        - name: tls
+          mountPath: "/etc/tls"
+          readOnly: true
+      volumes:
+      - name: tls
+        secret:
+          secretName: my-application-tls
+```
+
+> [!IMPORTANT]
+> The key here is that the `secretName` in the deployment needs to match the `name` of the `Certificate` generated above. 
+> You can also customize where the certificates are stored in the container by changing the `mountPath` section in the `Deployment`.
 
 ## Deployment via Argo CD Using Helm Chart
 
