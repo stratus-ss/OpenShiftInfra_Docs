@@ -106,7 +106,7 @@ Upon execution, the playbook initiates the deployment sequence:
 
 Ensure all prerequisites are met before initiating the deployment process.
 
-#### Explanation and Installation of the Advanced Cluster Managment Operator
+#### Explanation and Installation of the Advanced Cluster Management Operator
 
 ##### Description of Advanced Cluster Management Operator in OpenShift
 
@@ -133,7 +133,7 @@ To install ACM, users log into the OpenShift web console, navigate to the Operat
 
 ACM creates namespaces such as `local-cluster`, `open-cluster-management-agent`, `open-cluster-management-agent-addon`, and `multicluster-engine` during its setup. These namespaces are essential for managing the ACM stack, so it's important to ensure they do not already exist before deploying the operator.
 
-Once the operators `Advanced Cluster Management for Kubernetes` and `multicluster engine for Kubernetes` have finished installing, the hub cluster user interface will reload and provide the `All Clusters` and `local-cluster` menu items at the top of the user interface to allow swtiching from the RHACM cluster view to the local-cluster view.
+Once the operators `Advanced Cluster Management for Kubernetes` and `multicluster engine for Kubernetes` have finished installing, the hub cluster user interface will reload and provide the `All Clusters` and `local-cluster` menu items at the top of the user interface to allow switching from the RHACM cluster view to the local-cluster view.
 
 Refer to the [official documentation](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.9/html/install/index) for more details.
 
@@ -404,7 +404,7 @@ In the above policy, take note of the following:
     By setting an appropriate severity level, organizations can better manage their response to policy violations, focusing resources on addressing the most critical issues first.
 
 * `Placement`: The Placement section determines where and under what conditions a policy should be applied. It consists of several components:
-  * `clusterSets`: A clusterset is a structured way to group clusters based on shared characteristics, enabling more effective policy enforcement. By default, ACM creates a `global` clusterset, containing the Hub cluster and all spoke clusters, as well as a `default` clusterset which is empty but can be used for cluster segregation. Clustersets can be created to accomodate any number of customer requirements, such as a clusterset based on geographical locations, cluster roles, environment differences, etc. There is no limit on the number of clustersets an admin can create.
+  * `clusterSets`: A clusterset is a structured way to group clusters based on shared characteristics, enabling more effective policy enforcement. By default, ACM creates a `global` clusterset, containing the Hub cluster and all spoke clusters, as well as a `default` clusterset which is empty but can be used for cluster segregation. Clustersets can be created to accommodate any number of customer requirements, such as a clusterset based on geographical locations, cluster roles, environment differences, etc. There is no limit on the number of clustersets an admin can create.
     * `global`: When specified, the policy applies universally across all managed clusters within the scope of RHACM governance. This setting ensures consistent enforcement of critical policies without the need to specify individual clusters or selectors.
 
 * `matchExpressions`:
@@ -771,7 +771,7 @@ config:
   managementLIF: ""
 ```
 
-And the argocd applicationset contains these parameter substitions:
+And the argocd applicationset contains these parameter substitutions:
 
 ```
           - name: config.name
@@ -891,7 +891,7 @@ velero:
 
 ```
 
-And the Argocd applicationset on the ACM hub cluster contains these parameter substitions:
+And the Argocd applicationset on the ACM hub cluster contains these parameter substitutions:
 
 ```
           parameters:
