@@ -44,7 +44,7 @@ velero:
 
 ```
 
-And the Argocd applicationset on the ACM hub cluster contains these parameter substitions:
+And the Argocd applicationset on the ACM hub cluster contains these parameter substitutions:
 ```
           parameters:
           - name: velero.configuration.backupStorageLocation.name

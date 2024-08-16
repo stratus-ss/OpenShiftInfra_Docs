@@ -82,7 +82,7 @@ config:
   managementLIF: ""
 ```
 
-And the argocd applicationset contains these parameter substitions:
+And the argocd applicationset contains these parameter substitutions:
 ```
           - name: config.name
             value: '{{.name}}'
